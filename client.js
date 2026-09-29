@@ -679,8 +679,10 @@ window.__ModuleLoader__.load({
      * @returns 内联 SVG。
      */
     function PeriodIcon({ peak }) {
+      // 【为什么写死宽高】CSS 不在时，一个只有 viewBox 的 SVG 会撑满容器 ——
+      // 那正是"胶囊变成巨型月亮"的放大器。宽高与 CSS 声明一致，样式在时视觉不变。
       return h('svg', {
-        viewBox: '0 0 16 16', 'aria-hidden': true, fill: 'none', stroke: 'currentColor',
+        viewBox: '0 0 16 16', width: 14, height: 14, 'aria-hidden': true, fill: 'none', stroke: 'currentColor',
         strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round',
         className: peak ? 'umIconPeak' : 'umIconOff',
       }, peak
@@ -699,7 +701,7 @@ window.__ModuleLoader__.load({
      */
     function RefreshIcon() {
       return h('svg', {
-        viewBox: '0 0 16 16', 'aria-hidden': true, fill: 'none', stroke: 'currentColor',
+        viewBox: '0 0 16 16', width: 13, height: 13, 'aria-hidden': true, fill: 'none', stroke: 'currentColor',
         strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round',
       },
       h('path', { d: 'M13 8a5 5 0 1 1-1.55-3.6' }),
@@ -709,7 +711,7 @@ window.__ModuleLoader__.load({
     /** 图标：与宿主同一套描边语言（16 视框、currentColor、圆头）。 */
     function MeterIcon() {
       return h('svg', {
-        viewBox: '0 0 16 16', 'aria-hidden': true, fill: 'none', stroke: 'currentColor',
+        viewBox: '0 0 16 16', width: 14, height: 14, 'aria-hidden': true, fill: 'none', stroke: 'currentColor',
         strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round',
       },
       h('ellipse', { cx: 8, cy: 4.2, rx: 4.8, ry: 2.2 }),
@@ -1195,16 +1197,27 @@ window.__ModuleLoader__.load({
           ACCOUNT = undefined;
         }
         ctx.effect(() => ctx.locale.register(NS, { zh: ZH, en: EN }), 'usage-pill: dictionaries');
-        // 样式注入一次、挂在插件 fiber 上（卸载时移除）。
-        // 【踩过的坑】原先把 <style> 放在徽标组件树里 —— 设置卡是在**另一个槽位**
+        // 样式注入：**幂等 + 带键 + 不随 dispose 移除**。
+        //
+        // 【踩过的坑 1】原先把 <style> 放在徽标组件树里 —— 设置卡是在**另一个槽位**
         // （插件页的 plugins.bundle.config）渲染的，那边一个样式都拿不到，于是整张卡
-        // 退化成一行行挤在一起的裸文字 + 原生复选框。
+        // 退化成裸文字 + 原生复选框。所以必须插件级注入。
+        //
+        // 【踩过的坑 2】原先是"每次 apply 建一个新 <style>、dispose 时移除"。一旦出现
+        // 孤儿注册（旧实例被 dispose 而注册泄漏下来，HMR 重载期间就会发生），页面就进入
+        // 「组件还在、样式没了」的状态 —— 视觉上就是胶囊变成撑满容器的巨型图标。
+        // 现在按**键**复用同一个 <style> 并在每次 apply 刷新内容：重复 apply 不会叠加，
+        // 卸载后残留的那几 KB 样式匹配不到任何元素（下次刷新自然消失），
+        // 而这个失败模式的代价比留一份样式表难看得多。官方客户端插件也是先 querySelector
+        // 找同键样式再注入。
         ctx.effect(() => {
-          const style = document.createElement('style');
-          style.setAttribute('data-usage-pill', '');
+          let style = document.querySelector('style[data-dsh-style="usage-pill"]');
+          if (style === null) {
+            style = document.createElement('style');
+            style.setAttribute('data-dsh-style', 'usage-pill');
+            (document.head || document.documentElement).appendChild(style);
+          }
           style.textContent = CSS;
-          (document.head || document.documentElement).appendChild(style);
-          return () => { style.remove(); };
         }, 'usage-pill: styles');
         // 设置卡：bundle 自己的配置槽，key 用包名（官方给 bundle 配置指定的位置，
         // 渲染在本 bundle 插件页的描述与组件列表之间）。

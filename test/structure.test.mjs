@@ -48,20 +48,53 @@ test('文件头保留了目录与"单文件"理由', () => {
   assert.ok(/combo 脚本/.test(source), '应说明为什么 bundle 必须是单文件');
 });
 
-test('样式在插件级注入一次，而不是塞在某个槽位的组件树里', () => {
+test('样式是插件级幂等注入：按键复用同一个 <style>，且不塞进某个槽位的组件树里', () => {
   const source = clientSource();
-  // 踩过的坑：<style> 原先放在徽标组件的返回树里，而设置卡是在**另一个槽位**
+  // 踩过的坑 1：<style> 原先放在徽标组件的返回树里，而设置卡是在**另一个槽位**
   // （插件页的 plugins.bundle.config）渲染的 —— 那边一个样式都拿不到，
   // 整张卡退化成挤成一行的裸文字 + 原生复选框。所以样式必须挂在插件 fiber 上。
+  // 踩过的坑 2：原先 dispose 时移除 <style>，一旦出现孤儿注册（HMR 重载期间的旧实例），
+  // 页面就变成「组件还在、样式没了」。所以改成按键复用、不随 dispose 移除。
   assert.match(
     source,
-    /ctx\.effect\(\(\) => \{\s*const style = document\.createElement\('style'\)/,
-    '缺少插件级样式注入（ctx.effect + document.createElement(\'style\')）',
+    /ctx\.effect\(\(\) => \{\s*let style = document\.querySelector\('style\[data-dsh-style=/,
+    '缺少插件级幂等样式注入（按键 querySelector 复用，官方也是这个写法）',
+  );
+  assert.match(source, /style\.textContent = CSS/, '每次 apply 都应刷新样式内容，否则更新版本会用到旧样式');
+  assert.ok(
+    !/style\.remove\(\)/.test(source),
+    '不应随 dispose 移除：孤儿注册仍需样式，否则页面会变成「组件还在、样式没了」',
   );
   assert.ok(
     !/h\('style', null, CSS\)/.test(source),
     '不应再在组件树里渲染 <style>：其它槽位的组件拿不到它',
   );
+});
+
+test('每个内联 SVG 都必须有显式 width/height', () => {
+  // 一个只有 viewBox 的 SVG 在没有 CSS 时**会撑满容器** —— 这正是"徽标变成巨型
+  // 图标"那个故障的放大器。根因修掉之后，这条门禁保证放大器不会回来。
+  const source = clientSource();
+  const marker = "h('svg', {";
+  const offenders = [];
+  let index = source.indexOf(marker);
+  while (index !== -1) {
+    let depth = 0;
+    let end = index + marker.length - 1;
+    for (let cursor = end; cursor < source.length; cursor += 1) {
+      if (source[cursor] === '{') depth += 1;
+      else if (source[cursor] === '}') {
+        depth -= 1;
+        if (depth === 0) { end = cursor; break; }
+      }
+    }
+    const block = source.slice(index, end + 1);
+    if (!/\bwidth:\s*\d/.test(block) || !/\bheight:\s*\d/.test(block)) {
+      offenders.push(block.replace(/\s+/g, ' ').slice(0, 70));
+    }
+    index = source.indexOf(marker, end);
+  }
+  assert.ok(offenders.length === 0, '这些内联 SVG 缺显式宽高：' + offenders.join(' | '));
 });
 
 test('开关与官方 Switch 同构（button + role=switch + 官方 token）', () => {
