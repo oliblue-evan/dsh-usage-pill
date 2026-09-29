@@ -120,3 +120,14 @@ test('胶囊与真圆必须显式退出全局超椭圆（corner-shape:round）',
     '至少四处：胶囊 .umPill、圆点 .umDot、开关轨道 .umSwitch、开关圆钮 .umSwitchThumb',
   );
 });
+
+test('每个 slots.inject 都必须紧贴在 ctx.effect(() => …) 里（否则 dispose 后会泄漏成"组件在、样式没了"）', () => {
+  const source = clientSource();
+  // 只认**紧贴**的写法：中间除空白外不允许有别的东西。
+  // 【教训】先前这版门禁是"往前 160 字符里出现过 ctx.effect( 就算过" —— 变异测试证明它
+  // 抓不到回退：有多处注入时，没包住的那处仍能看到前一处的 ctx.effect(。
+  const total = [...source.matchAll(/ctx\.slots\.inject\(/g)].length;
+  const wrapped = [...source.matchAll(/ctx\.effect\(\(\)\s*=>\s*ctx\.slots\.inject\(/g)].length;
+  assert.ok(total > 0, '本插件应当至少有一处 slots.inject');
+  assert.equal(wrapped, total, `有 ${total - wrapped} 处 slots.inject 没有紧跟 ctx.effect(() => …)`);
+});

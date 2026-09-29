@@ -1208,17 +1208,21 @@ window.__ModuleLoader__.load({
         }, 'usage-pill: styles');
         // 设置卡：bundle 自己的配置槽，key 用包名（官方给 bundle 配置指定的位置，
         // 渲染在本 bundle 插件页的描述与组件列表之间）。
-        ctx.slots.inject('plugins.bundle.config', () => ctx.slots.register({
+        // 【踩过的坑】`slots.inject` 返回的是 dispose 函数，**必须**用 `ctx.effect` 包住
+        // —— 官方每一个客户端插件都是这么写的。不包住就会这样：插件被 dispose 时，
+        // 由 effect 管理的 <style> 被移除，而这个注入却**泄漏**下来继续渲染，
+        // 结果是「组件还在、样式没了」：胶囊退化成撑满容器的巨型图标 + 挤在一起的文字。
+        ctx.effect(() => ctx.slots.inject('plugins.bundle.config', () => ctx.slots.register({
           name: 'plugins.bundle.config',
           key: 'dsh-usage-pill',
           locale: NS,
-        }, UsageMeterSettings));
-        ctx.slots.inject('conversation.composer.dock', () => ctx.slots.register({
+        }, UsageMeterSettings)), 'usage-pill: settings card');
+        ctx.effect(() => ctx.slots.inject('conversation.composer.dock', () => ctx.slots.register({
           name: 'conversation.composer.dock',
           id: CELL,
           order: 10,
           locale: NS,
-        }, UsageMeter));
+        }, UsageMeter)), 'usage-pill: dock cell');
       },
     };
   },
