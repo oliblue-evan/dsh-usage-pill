@@ -5,7 +5,7 @@
 > **account balance** in one pill below the composer. It needs **no API key** when you are
 > signed in to a DeepSeek account (it reads the account balance through the harness's own
 > account remote, falling back to `DEEPSEEK_API_KEY`). It is a single-file client bundle
-> with a dependency-free host half, and ships 49 assertions (`npm test`). MIT licensed.
+> with a dependency-free host half, and ships 50 assertions (`npm test`). MIT licensed.
 > Install: `plugin_manager(action: "install_bundle", target: "github:oliblue-evan/dsh-usage-pill")`, then
 > reload the page.
 
@@ -185,7 +185,7 @@ const cacheWriteTokens = rawUsage.prompt_tokens_details?.cache_write_tokens || 0
 | `client.js` | 全部界面：读投影、余额双链路、徽标与弹层 |
 | `locale/en.json`、`locale/zh-CN.json` | 插件页的标题与介绍（`dsh-app-boot` 的 `readPluginMeta` 读这个目录） |
 | `assets/icon.svg` | 插件图标（`package.json` 的 `icon`，相对路径、≤256 KiB） |
-| `test/*.test.mjs` | 42 项断言（`npm test`） |
+| `test/*.test.mjs` | 50 项断言（`npm test`） |
 
 **无构建步骤，`client.js` 就是产物本身。** 这也不是偷懒 —— 宿主把各插件的 bundle
 拼接成一个 combo 脚本、以**传统脚本**执行（`window.__ModuleLoader__` 处于 queue 模式，
@@ -352,7 +352,7 @@ curl -s "http://127.0.0.1:19387/plugins/<id>/client.js&rev=<rev>"
 
 ## 验证
 
-`npm test`（= `node --test test/*.test.mjs`）跑 **49 项断言**，9 个文件各管一层：
+`npm test`（= `node --test test/*.test.mjs`）跑 **50 项断言**，9 个文件各管一层：
 
 | 文件 | 断言 | 覆盖 |
 |---|---|---|
