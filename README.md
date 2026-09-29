@@ -18,6 +18,20 @@ DeepSeek **用量与余额**：输入框下方一枚徽标，实时显示本会�
 > 密钥全程不出现；只有「没登录、只有 API Key」的用户才回落到宿主路由。
 > 据我看到的同类插件，真实余额普遍要求你自行配置 API Key。
 
+## 截图
+
+**插件页** —— 标题、简介与图标按官方约定提供（`package.json` 的 `icon` + `locale/*.json` 的
+`meta.title` / `meta.description`），栏目位置由 `plugins.bundle.config` 槽位决定：
+
+![插件页](assets/screenshot-plugin-page.png)
+
+**弹层与胶囊** —— 输入框下方那枚胶囊，点开是明细、计价口径、峰谷倒计时与今日时段轴：
+
+![弹层](assets/screenshot-panel.png)
+
+> 两张截图里的**金额、余额、token 数均为示例值**（真实数值已做打码处理）；第二张底部显示
+> 「按当前价估算」是宿主投影尚未加载时的降级提示，属预期行为，见下文「金额口径」。
+
 ```text
 🧮 108.0k tok · ¥0.05 · 余 ¥123.45
 ```
