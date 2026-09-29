@@ -282,6 +282,29 @@ const cacheWriteTokens = rawUsage.prompt_tokens_details?.cache_write_tokens || 0
 1. **`CN_STATUTORY_HOLIDAYS`** —— 2026 年的法定节假日表（依据国办发明电〔2025〕7 号），按年扩表。
 2. **`PRICE_SCHEDULES`** —— 按生效时刻分档的价目表，官方调价时追加一条 `{ from: Date.UTC(...), ... }`。
 
+## 开发提示：改客户端代码为什么"看不到效果"
+
+**先确认宿主实际发出去的那份 bundle，而不是磁盘上的源码。** 我在这里栽过三次：
+改完 `client.js`、重启、刷新，页面纹丝不动 —— 因为 profile 里那份是**物理副本**。
+
+```bash
+# 1) profile 里是符号链接还是物理副本？（link: 安装也可能被物化成副本）
+ls -la ~/.dsh/profiles/<profile>/node_modules/dsh-usage-pill
+
+# 2) 拿权威的 bundle 地址（graph 里有每个客户端条目的 id 与 rev）
+curl -s -N --max-time 4 http://127.0.0.1:19387/plugins/events
+
+# 3) 抓下来断言语义特征（比"看起来好像好了"可靠）
+curl -s "http://127.0.0.1:19387/plugins/<id>/client.js&rev=<rev>"
+```
+
+经验：**物理副本会让你的每一次编辑都石沉大海**，连重启都没用（宿主只会重新读那份副本）。
+换成指向工作区的符号链接后，宿主会在下一次轮询里自己重读，**不必重启**。
+
+> 宿主半边（`index.js`）与客户端 bundle（`client.js`）是两套读取路径：前者在启动时
+> 由 ESM 加载、改完必须重启；后者由 `dsh-client-modules` 组合并提供，文件一变换个 rev
+> 就会推给页面。两者的"旧版本"可以同时存在 —— 调试时先分清是哪一半没生效。
+
 ## 已知取舍（有意不做）
 
 - **不做"今日/本月/累计"跨会话统计**。那需要一份持久化账本 + 启动时补扫历史会话
