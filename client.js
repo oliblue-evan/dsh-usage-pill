@@ -681,9 +681,11 @@ window.__ModuleLoader__.load({
     function PeriodIcon({ peak }) {
       // 【为什么写死宽高】CSS 不在时，一个只有 viewBox 的 SVG 会撑满容器 ——
       // 那正是"胶囊变成巨型月亮"的放大器。宽高与 CSS 声明一致，样式在时视觉不变。
+      // 【线宽 1】照官方图标契约 ICON_REGULAR_STROKE = 1（medium 才 1.3）；
+      // 原先的 1.5 比全应用任何图标都重，看起来就是"不像宿主的东西"。
       return h('svg', {
         viewBox: '0 0 16 16', width: 14, height: 14, 'aria-hidden': true, fill: 'none', stroke: 'currentColor',
-        strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round',
+        strokeWidth: 1, strokeLinecap: 'round', strokeLinejoin: 'round',
         className: peak ? 'umIconPeak' : 'umIconOff',
       }, peak
         ? [h('circle', { key: 'disc', cx: 8, cy: 8, r: 3.1 }),
@@ -702,7 +704,7 @@ window.__ModuleLoader__.load({
     function RefreshIcon() {
       return h('svg', {
         viewBox: '0 0 16 16', width: 13, height: 13, 'aria-hidden': true, fill: 'none', stroke: 'currentColor',
-        strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round',
+        strokeWidth: 1, strokeLinecap: 'round', strokeLinejoin: 'round',
       },
       h('path', { d: 'M13 8a5 5 0 1 1-1.55-3.6' }),
       h('path', { d: 'M13.3 2.5v2.7h-2.7' }));
@@ -712,7 +714,7 @@ window.__ModuleLoader__.load({
     function MeterIcon() {
       return h('svg', {
         viewBox: '0 0 16 16', width: 14, height: 14, 'aria-hidden': true, fill: 'none', stroke: 'currentColor',
-        strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round',
+        strokeWidth: 1, strokeLinecap: 'round', strokeLinejoin: 'round',
       },
       h('ellipse', { cx: 8, cy: 4.2, rx: 4.8, ry: 2.2 }),
       h('path', { d: 'M3.2 4.2v7.6c0 1.2 2.1 2.2 4.8 2.2s4.8-1 4.8-2.2V4.2' }),
