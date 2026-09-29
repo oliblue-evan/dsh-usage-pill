@@ -5,7 +5,7 @@
 > **account balance** in one pill below the composer. It needs **no API key** when you are
 > signed in to a DeepSeek account (it reads the account balance through the harness's own
 > account remote, falling back to `DEEPSEEK_API_KEY`). It is a single-file client bundle
-> with a dependency-free host half, and ships 48 assertions (`npm test`). MIT licensed.
+> with a dependency-free host half, and ships 49 assertions (`npm test`). MIT licensed.
 > Install: `plugin_manager(action: "install_bundle", target: "github:oliblue-evan/dsh-usage-pill")`, then
 > reload the page.
 
@@ -329,7 +329,7 @@ const cacheWriteTokens = rawUsage.prompt_tokens_details?.cache_write_tokens || 0
 
 ## 验证
 
-`npm test`（= `node --test test/*.test.mjs`）跑 **48 项断言**，9 个文件各管一层：
+`npm test`（= `node --test test/*.test.mjs`）跑 **49 项断言**，9 个文件各管一层：
 
 | 文件 | 断言 | 覆盖 |
 |---|---|---|
