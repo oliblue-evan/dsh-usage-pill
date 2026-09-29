@@ -363,3 +363,11 @@ const cacheWriteTokens = rawUsage.prompt_tokens_details?.cache_write_tokens || 0
   `unpricedRequests: 0`（说明 `request/header` 的路由跟踪没有漏请求）。
 - **仍未验证**：插件页的标题/简介是否出现（取决于宿主页面数据是否已重新加载 ——
   客户端 bundle 是热更新的，与宿主包元数据的取数时机不同步），以及开关的实际视觉效果。
+
+## 协作说明
+
+本插件由 **李敖（oliblue）** 与 **DeepSeek（deepseek-flash）** 协作完成：需求、设计取舍与逐轮验收由作者负责，
+代码实现、排查与测试由模型完成；**版权归人类作者所有**（见 [LICENSE](LICENSE)）。
+
+> 之所以把这段署名放在 README 而不是 LICENSE 里：GitHub 的许可证识别要求 MIT 正文保持原样，
+> 在版权行后插入额外段落会让它被识别成 "Other"，别人就看不出版本可 MIT 复用。
